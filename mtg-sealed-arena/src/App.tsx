@@ -107,6 +107,21 @@ function App() {
     };
   }, []);
 
+  // Emit login after reload if user exists
+  useEffect(() => {
+    if (user && socket && socket.connected) {
+      socket.emit('login', user);
+    } else if (user) {
+      const onConnect = () => {
+        socket.emit('login', user);
+      };
+      socket.on('connect', onConnect);
+      return () => {
+        socket.off('connect', onConnect);
+      };
+    }
+  }, [user]);
+
   const handleLogin = (email: string) => {
     setLoginLoading(true);
     if (socket) {

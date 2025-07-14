@@ -22,7 +22,7 @@ const BASIC_LANDS = [
 ];
 
 export const DeckBuilder: React.FC<DeckBuilderProps> = ({ boosters, onReady }) => {
-  const pool: ScryfallCard[] = boosters.flat();
+  const boosterPool: ScryfallCard[] = boosters.flat();
   const [deck, setDeck] = useState<ScryfallCard[]>(() => {
     const saved = localStorage.getItem('deckbuilder_deck');
     if (saved) {
@@ -34,7 +34,20 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({ boosters, onReady }) =
     }
     return [];
   });
-  const [poolCards, setPoolCards] = useState<ScryfallCard[]>(pool);
+  // Pool = Booster + alle Karten im Deck, die nicht im Booster sind (z.B. Basic Lands)
+  const [poolCards, setPoolCards] = useState<ScryfallCard[]>(() => {
+    const savedDeck = localStorage.getItem('deckbuilder_deck');
+    let deckCards: ScryfallCard[] = [];
+    if (savedDeck) {
+      try {
+        deckCards = JSON.parse(savedDeck);
+      } catch {}
+    }
+    // Füge alle Karten aus dem Deck hinzu, die nicht im BoosterPool sind
+    const boosterIds = new Set(boosterPool.map(c => c.instanceId));
+    const extraCards = deckCards.filter(c => !boosterIds.has(c.instanceId));
+    return [...boosterPool, ...extraCards];
+  });
   const [basicCounts, setBasicCounts] = useState<{ [key: string]: number }>({ Plains: 0, Island: 0, Swamp: 0, Mountain: 0, Forest: 0 });
   const [loadingLand, setLoadingLand] = useState<string | null>(null);
   const [flipped, setFlipped] = useState<Record<string, boolean>>({}); // instanceId -> flipped

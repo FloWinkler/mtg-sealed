@@ -157,7 +157,15 @@ function App() {
   // Optional: Add a logout function to clear localStorage and reset user
   const handleLogout = () => {
     setUser(null);
+    setFinalDeck(null);
+    setBoosters(null);
+    setLobby(null);
+    // Remove all relevant localStorage keys
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('boosters');
+    localStorage.removeItem('deckbuilder_deck');
+    localStorage.removeItem('final_deck');
+    localStorage.removeItem('game_state');
     // Optionally, emit a logout event or reset socket state
   };
 
@@ -171,6 +179,10 @@ function App() {
 
   return (
     <Router>
+      {/* Logout Button oben rechts */}
+      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1000 }}>
+        <button onClick={handleLogout} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Logout</button>
+      </div>
       {/* Optional: Add a logout button somewhere in your UI */}
       {/* <button onClick={handleLogout}>Logout</button> */}
       <AppRoutes

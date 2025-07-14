@@ -11,8 +11,13 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
+    origin: [
+      'https://mtg-sealed.vercel.app',
+      'https://mtg-sealed-git-main-flowinklers-projects.vercel.app',
+      'https://mtg-sealed-3n9nobb9v-flowinklers-projects.vercel.app'
+    ],
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 

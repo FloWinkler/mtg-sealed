@@ -74,13 +74,17 @@ function App() {
   const [boosters, setBoosters] = useState<Booster[] | null>(null);
   const [playerCount, setPlayerCount] = useState(1);
   const [finalDeck, setFinalDeck] = useState<ScryfallCard[] | null>(null);
-  const [user, setUser] = useState<string | null>(null);
+  const [user, setUser] = useState<string | null>(() => {
+    // Check localStorage for saved user email
+    return localStorage.getItem('userEmail');
+  });
   const [loginLoading, setLoginLoading] = useState(false);
   const [lobby, setLobby] = useState<LobbyState | null>(null);
 
   useEffect(() => {
     const onLoginSuccess = (data: { email: string }) => {
       setUser(data.email);
+      localStorage.setItem('userEmail', data.email); // Save to localStorage
       setLoginLoading(false);
     };
     socket.on('login_success', onLoginSuccess);
@@ -118,6 +122,13 @@ function App() {
     socket.emit('set_ready', ready);
   };
 
+  // Optional: Add a logout function to clear localStorage and reset user
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('userEmail');
+    // Optionally, emit a logout event or reset socket state
+  };
+
   if (!user) {
     return <Login onLogin={handleLogin} loading={loginLoading} />;
   }
@@ -128,6 +139,8 @@ function App() {
 
   return (
     <Router>
+      {/* Optional: Add a logout button somewhere in your UI */}
+      {/* <button onClick={handleLogout}>Logout</button> */}
       <AppRoutes
         user={user}
         lobby={lobby}

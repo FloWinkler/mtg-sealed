@@ -12,14 +12,22 @@ const STATIC_SETS = [
 ];
 
 type SetSelectorProps = {
-  // Entferne onBoostersGenerated, da die Booster nicht mehr hier generiert werden
   onSetSelected?: (setCode: string) => void;
+  selectedSet?: string;
 };
 
-export const SetSelector: React.FC<SetSelectorProps> = ({ onSetSelected }) => {
+export const SetSelector: React.FC<SetSelectorProps> = ({ onSetSelected, selectedSet }) => {
   const [sets, setSets] = useState(STATIC_SETS);
-  const [selectedSet, setSelectedSet] = useState(STATIC_SETS[0].code);
+  const [internalSelectedSet, setInternalSelectedSet] = useState(selectedSet ?? STATIC_SETS[0].code);
   const [setsLoading, setSetsLoading] = useState(true);
+
+  // Synchronisiere internen State, wenn sich das Prop ändert
+  useEffect(() => {
+    if (selectedSet && selectedSet !== internalSelectedSet) {
+      setInternalSelectedSet(selectedSet);
+    }
+    // eslint-disable-next-line
+  }, [selectedSet]);
 
   useEffect(() => {
     async function fetchSets() {
@@ -33,13 +41,18 @@ export const SetSelector: React.FC<SetSelectorProps> = ({ onSetSelected }) => {
           .map((set: any) => ({ code: set.code, name: set.name }));
         if (filtered.length > 0) {
           setSets(filtered);
-          setSelectedSet(filtered[0].code);
-          if (onSetSelected) onSetSelected(filtered[0].code);
+          // Wenn kein selectedSet-Prop gesetzt ist, initialisiere mit erstem Set
+          if (!selectedSet) {
+            setInternalSelectedSet(filtered[0].code);
+            if (onSetSelected) onSetSelected(filtered[0].code);
+          }
         }
       } catch (e) {
         setSets(STATIC_SETS);
-        setSelectedSet(STATIC_SETS[0].code);
-        if (onSetSelected) onSetSelected(STATIC_SETS[0].code);
+        if (!selectedSet) {
+          setInternalSelectedSet(STATIC_SETS[0].code);
+          if (onSetSelected) onSetSelected(STATIC_SETS[0].code);
+        }
       } finally {
         setSetsLoading(false);
       }
@@ -49,7 +62,7 @@ export const SetSelector: React.FC<SetSelectorProps> = ({ onSetSelected }) => {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSet(e.target.value);
+    setInternalSelectedSet(e.target.value);
     if (onSetSelected) onSetSelected(e.target.value);
   };
 
@@ -61,7 +74,7 @@ export const SetSelector: React.FC<SetSelectorProps> = ({ onSetSelected }) => {
       ) : (
         <select
           className="border rounded px-3 py-2 text-base"
-          value={selectedSet}
+          value={internalSelectedSet}
           onChange={handleChange}
         >
           {sets.map((set) => (

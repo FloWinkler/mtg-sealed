@@ -4,22 +4,43 @@ import { Lobby } from './components/Lobby';
 import { DeckBuilder } from './components/DeckBuilder';
 import Game from './components/Game';
 import { socket } from './socket';
+import type { Booster, ScryfallCard } from './lib/boosterGenerator';
 
-export function AppRoutes({ user, lobby, boosters, finalDeck, handleSetFinalDeck, handleSetSelect, handleReadyToggle }) {
+interface LobbyPlayer {
+  email: string;
+  ready: boolean;
+}
+
+interface LobbyState {
+  players: LobbyPlayer[];
+  set: string | null;
+}
+
+interface AppRoutesProps {
+  user: string;
+  lobby: LobbyState;
+  boosters: Booster[] | null;
+  finalDeck: ScryfallCard[] | null;
+  handleSetFinalDeck: (deck: ScryfallCard[]) => void;
+  handleSetSelect: (set: string) => void;
+  handleReadyToggle: (ready: boolean) => void;
+}
+
+export function AppRoutes({ user, lobby, boosters, finalDeck, handleSetFinalDeck, handleSetSelect, handleReadyToggle }: AppRoutesProps) {
   const navigate = useNavigate();
-  const [gameState, setGameState] = useState(null);
+  const [gameState, setGameState] = useState<any>(null);
   const [waitingForGame, setWaitingForGame] = useState(false);
 
   useEffect(() => {
     socket.on('start_deckbuilding', () => {
       navigate('/deckbuilder');
     });
-    socket.on('game_start', (game) => {
+    socket.on('game_start', (game: any) => {
       setGameState(game);
       setWaitingForGame(false);
       navigate('/game');
     });
-    socket.on('game_update', (game) => {
+    socket.on('game_update', (game: any) => {
       setGameState(game);
     });
     return () => {
@@ -29,7 +50,7 @@ export function AppRoutes({ user, lobby, boosters, finalDeck, handleSetFinalDeck
     };
   }, [navigate]);
 
-  const handleDeckReady = (deck) => {
+  const handleDeckReady = (deck: ScryfallCard[]) => {
     handleSetFinalDeck(deck); // Setzt das Deck im State
     socket.emit('submit_deck', deck);
     setWaitingForGame(true);
@@ -51,7 +72,7 @@ export function AppRoutes({ user, lobby, boosters, finalDeck, handleSetFinalDeck
           !finalDeck || !gameState ? (
             <div className="flex items-center justify-center min-h-screen text-xl">{waitingForGame ? 'Warte auf den anderen Spieler...' : 'Kein Deck oder Game-State übergeben.'}</div>
           ) : (
-            <Game deck={finalDeck} gameState={gameState} user={user} />
+            <Game deck={finalDeck} gameState={gameState as any} user={user} />
           )
         }
       />

@@ -12,6 +12,16 @@ import { socket } from './socket';
 import { Lobby } from './components/Lobby';
 import { AppRoutes } from './AppRoutes';
 
+interface LobbyPlayer {
+  email: string;
+  ready: boolean;
+}
+
+interface LobbyState {
+  players: LobbyPlayer[];
+  set: string | null;
+}
+
 function Home({ onStart }: { onStart: (boosters: Booster[], playerCount: number) => void }) {
   const [playerCount, setPlayerCount] = useState(1);
   const [selectedSet, setSelectedSet] = useState<string | null>(null);
@@ -66,7 +76,7 @@ function App() {
   const [finalDeck, setFinalDeck] = useState<ScryfallCard[] | null>(null);
   const [user, setUser] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState(false);
-  const [lobby, setLobby] = useState<any>(null);
+  const [lobby, setLobby] = useState<LobbyState | null>(null);
 
   useEffect(() => {
     const onLoginSuccess = (data: { email: string }) => {

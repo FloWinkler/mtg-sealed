@@ -28,8 +28,44 @@ interface AppRoutesProps {
 
 export function AppRoutes({ user, lobby, boosters, finalDeck, handleSetFinalDeck, handleSetSelect, handleReadyToggle }: AppRoutesProps) {
   const navigate = useNavigate();
-  const [gameState, setGameState] = useState<any>(null);
+  const [gameState, setGameState] = useState<any>(() => {
+    const saved = localStorage.getItem('game_state');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
   const [waitingForGame, setWaitingForGame] = useState(false);
+
+  // Restore finalDeck from localStorage if missing
+  useEffect(() => {
+    if (!finalDeck) {
+      const saved = localStorage.getItem('final_deck');
+      if (saved) {
+        try {
+          handleSetFinalDeck(JSON.parse(saved));
+        } catch {}
+      }
+    }
+  }, [finalDeck, handleSetFinalDeck]);
+
+  // Persist gameState to localStorage on change
+  useEffect(() => {
+    if (gameState) {
+      localStorage.setItem('game_state', JSON.stringify(gameState));
+    }
+  }, [gameState]);
+
+  // Clear game_state from localStorage when leaving game
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem('game_state');
+    };
+  }, []);
 
   useEffect(() => {
     socket.on('start_deckbuilding', () => {

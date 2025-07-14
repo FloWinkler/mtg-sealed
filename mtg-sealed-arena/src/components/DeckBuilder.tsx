@@ -23,7 +23,17 @@ const BASIC_LANDS = [
 
 export const DeckBuilder: React.FC<DeckBuilderProps> = ({ boosters, onReady }) => {
   const pool: ScryfallCard[] = boosters.flat();
-  const [deck, setDeck] = useState<ScryfallCard[]>([]);
+  const [deck, setDeck] = useState<ScryfallCard[]>(() => {
+    const saved = localStorage.getItem('deckbuilder_deck');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
   const [poolCards, setPoolCards] = useState<ScryfallCard[]>(pool);
   const [basicCounts, setBasicCounts] = useState<{ [key: string]: number }>({ Plains: 0, Island: 0, Swamp: 0, Mountain: 0, Forest: 0 });
   const [loadingLand, setLoadingLand] = useState<string | null>(null);
@@ -32,6 +42,11 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({ boosters, onReady }) =
 
   // Add state for deck card positions
   const [deckPositions, setDeckPositions] = useState<Record<string, { x: number; y: number }>>({});
+
+  // Persist deck to localStorage on change
+  React.useEffect(() => {
+    localStorage.setItem('deckbuilder_deck', JSON.stringify(deck));
+  }, [deck]);
 
   // Helper to initialize positions for new cards in deck
   React.useEffect(() => {
@@ -345,6 +360,8 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({ boosters, onReady }) =
               disabled={deck.length <5}
               onClick={() => {
                 onReady(deck);
+                localStorage.setItem('final_deck', JSON.stringify(deck));
+                localStorage.removeItem('deckbuilder_deck');
                 navigate('/game');
               }}
             >

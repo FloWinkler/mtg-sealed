@@ -303,6 +303,15 @@ io.on('connection', (socket) => {
     io.emit('game_update', game);
   });
 
+  // Lobby zurücksetzen
+  socket.on('reset_lobby', () => {
+    lobby = { players: [], set: null };
+    users = {};
+    game = null;
+    playerRoles = {};
+    io.emit('lobby_update', lobby);
+  });
+
   // Disconnect
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);

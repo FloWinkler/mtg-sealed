@@ -1,4 +1,5 @@
 import { SetSelector } from './SetSelector';
+import { socket } from '../socket';
 
 interface LobbyPlayer {
   email: string;
@@ -42,6 +43,14 @@ export function Lobby({ user, lobby, onSetSelect, onReadyToggle }: LobbyProps) {
           {me?.ready ? 'Bereit!' : 'Bereit machen'}
         </button>
         <div className="text-gray-500 text-sm mt-4">Warte, bis beide Spieler bereit sind...</div>
+        {lobby.players.length > 0 && (
+          <button
+            className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            onClick={() => socket.emit('reset_lobby')}
+          >
+            Lobby zurücksetzen
+          </button>
+        )}
       </div>
     </div>
   );

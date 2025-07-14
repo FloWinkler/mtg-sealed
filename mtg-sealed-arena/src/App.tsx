@@ -71,7 +71,17 @@ function Home({ onStart }: { onStart: (boosters: Booster[], playerCount: number)
 }
 
 function App() {
-  const [boosters, setBoosters] = useState<Booster[] | null>(null);
+  const [boosters, setBoosters] = useState<Booster[] | null>(() => {
+    const saved = localStorage.getItem('boosters');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
   const [playerCount, setPlayerCount] = useState(1);
   const [finalDeck, setFinalDeck] = useState<ScryfallCard[] | null>(null);
   const [user, setUser] = useState<string | null>(() => {
@@ -93,6 +103,7 @@ function App() {
     });
     socket.on('booster_data', (boosters) => {
       setBoosters(boosters);
+      localStorage.setItem('boosters', JSON.stringify(boosters));
     });
     socket.on('booster_error', (msg) => {
       alert(msg);
@@ -137,6 +148,12 @@ function App() {
     socket.emit('set_ready', ready);
   };
 
+  const handleSetFinalDeck = (deck: ScryfallCard[]) => {
+    setFinalDeck(deck);
+    // Remove boosters from localStorage after deck is submitted
+    localStorage.removeItem('boosters');
+  };
+
   // Optional: Add a logout function to clear localStorage and reset user
   const handleLogout = () => {
     setUser(null);
@@ -161,7 +178,7 @@ function App() {
         lobby={lobby}
         boosters={boosters}
         finalDeck={finalDeck}
-        handleSetFinalDeck={setFinalDeck}
+        handleSetFinalDeck={handleSetFinalDeck}
         handleSetSelect={handleSetSelect}
         handleReadyToggle={handleReadyToggle}
       />
